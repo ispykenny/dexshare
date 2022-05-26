@@ -1,15 +1,29 @@
 import { 
   LoaderFunction,
-  json
+  redirect
   } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
-import {auth} from '~/utils/auth';
+import {
+  auth
+} from '~/utils/auth';
+import {
+  setTheCookies
+} from '~/utils/createCookies';
 
 export const loader: LoaderFunction = async({request}) => {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
-  const fetchAuthTokens = await auth(code as string);
-  return json(fetchAuthTokens);
+  const {access_token, refresh_token} = await auth(code as string);
+  
+
+  const headers = await setTheCookies({
+    access_token,
+    refresh_token
+  })
+
+  return redirect("/", {
+    headers
+  });
 }
 
 const Login = () => {
